@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Journeys — Cabinet{% endblock %}
+{% block content %}
+<section class="journeys">
+  <div class="journey-heading"><p class="eyebrow">A geography of memory</p><h1>Journeys</h1><p>Places are not metadata here. They are rooms in the museum.</p></div>
+  <div class="journey-map"><div class="map-orbit one"></div><div class="map-orbit two"></div><span class="pin p1">Thailand</span><span class="pin p2">Japan</span><p>More journeys<br>will appear here.</p></div>
+  <div class="journey-list">
+  {% for group in groups %}<div><span class="year">{{ group.year or 'Unknown' }}</span><h2>{{ group.country or 'Unknown country' }}</h2><p>{{ group.place or 'Place unknown' }}</p><span>{{ group.count }} object{{ '' if group.count == 1 else 's' }}</span></div>{% endfor %}
+  </div>
+</section>
+{% endblock %}

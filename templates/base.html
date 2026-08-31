@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1eee6">
+  <title>{% block title %}Cabinet — A private museum{% endblock %}</title>
+  <meta name="description" content="A private museum of objects, journeys, and the stories that make them worth keeping.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="Cabinet home">
+      <span class="brand-mark">C</span>
+      <span>Cabinet <small>Private museum</small></span>
+    </a>
+    <nav>
+      <a href="{{ url_for('index') }}">Collection</a>
+      <a href="{{ url_for('journeys') }}">Journeys</a>
+      <a class="add-link" href="{{ url_for('new_object') }}"><span>＋</span> Add object</a>
+    </nav>
+  </header>
+  <main>{% block content %}{% endblock %}</main>
+  <footer><span>Cabinet, begun 2026</span><span>Objects remember what we forget.</span></footer>
+</body>
+</html>

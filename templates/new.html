@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Add an object — Cabinet{% endblock %}
+{% block content %}
+<section class="form-page">
+  <div class="form-intro"><p class="eyebrow">New accession</p><h1>Add an object,<br><em>keep the moment.</em></h1><p>Start with what you know today. Unknowns and guesses are welcome—the record can grow with the object.</p></div>
+  <form class="object-form" method="post">
+    {% with messages = get_flashed_messages() %}{% if messages %}<div class="form-error">{{ messages[0] }}</div>{% endif %}{% endwith %}
+    <fieldset><legend>01 · The object</legend>
+      <label class="wide">Name <input name="name" value="{{ form.get('name','') }}" placeholder="Blue–green woven scarf" required></label>
+      <label>Category <input name="category" value="{{ form.get('category','') }}" placeholder="Textile" required></label>
+      <label>Image URL <input name="image_url" value="{{ form.get('image_url','') }}" placeholder="https://…"></label>
+      <label>Material <input name="material" value="{{ form.get('material','') }}" placeholder="Silk"></label>
+      <label>Technique <input name="technique" value="{{ form.get('technique','') }}" placeholder="Hand woven"></label>
+      <label>Maker <input name="maker" value="{{ form.get('maker','') }}" placeholder="Name or unknown"></label>
+      <label>Culture / region <input name="culture_region" value="{{ form.get('culture_region','') }}" placeholder="Northern Thailand"></label>
+    </fieldset>
+    <fieldset><legend>02 · Acquisition</legend>
+      <label>Date <input name="acquired_date" value="{{ form.get('acquired_date','') }}" placeholder="2026-08-27 or 2018"></label>
+      <label>How precise?
+        <select name="date_precision"><option value="exact">Exact</option><option value="month">Approximate month</option><option value="year">Approximate year</option><option value="unknown">Unknown</option></select>
+      </label>
+      <label>City / place <input name="place" value="{{ form.get('place','') }}" placeholder="Bangkok"></label>
+      <label>Country <input name="country" value="{{ form.get('country','') }}" placeholder="Thailand"></label>
+      <label>Shop / source <input name="source" value="{{ form.get('source','') }}" placeholder="Market, shop, person…"></label>
+      <label>Price <input name="price" value="{{ form.get('price','') }}" placeholder="฿2,400"></label>
+    </fieldset>
+    <fieldset><legend>03 · Memory & knowledge</legend>
+      <label class="wide">The story <textarea name="story" rows="6" placeholder="What made you stop? What did the seller say? What nearly made you choose another one?">{{ form.get('story','') }}</textarea></label>
+      <label>Knowledge status
+        <select name="knowledge_status"><option value="confirmed">✓ Confirmed</option><option value="seller">≈ Seller told me</option><option value="guess">? My guess</option><option value="unknown" selected>? Needs research</option></select>
+      </label>
+      <label>Evidence <input name="evidence" value="{{ form.get('evidence','') }}" placeholder="Receipt · old photo · memory"></label>
+      <label>Condition <input name="condition" value="{{ form.get('condition','') }}" placeholder="Good"></label>
+    </fieldset>
+    <button class="save-button" type="submit">Add to the collection <span>→</span></button>
+  </form>
+</section>
+{% endblock %}
