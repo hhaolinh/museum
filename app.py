@@ -66,27 +66,27 @@ def init_db():
             """,
             [
                 (
-                    "Blue–green woven textile", "Textile", "2026-08-27", "exact",
-                    "Bangkok", "Thailand", "Pha ToomThong", "฿2,400",
-                    "I kept turning it in the light because the blue quietly became green. The shopkeeper called it Pha ToomThong; that name is kept here as part of the day, pending further research.",
-                    "Silk", "Hand woven", "Unknown", "Thailand", "Excellent",
-                    "seller", "Seller description · purchase-day photographs",
+                    "蓝绿色变色织物", "织物", "2026-08-27", "exact",
+                    "曼谷", "泰国", "Pha ToomThong", "฿2,400",
+                    "我在三个颜色之间纠结了很久，最后发现这一块随着光线和角度会悄悄地从蓝色变成绿色。店主说它叫 Pha ToomThong；我先把购买当天听到的说法保存下来，留待以后考证。",
+                    "丝", "手工织造", "佚名", "泰国", "极佳",
+                    "seller", "店主口述 · 购买当天的照片",
                     "https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?auto=format&fit=crop&w=1400&q=85", 1,
                 ),
                 (
-                    "Indigo market cloth", "Textile", "2026-08-24", "exact",
-                    "Chiang Mai", "Thailand", "Weekend market", "฿680",
-                    "Found folded beneath a stack of brighter cloths. The uneven indigo was the reason I chose it.",
-                    "Cotton", "Resist dye", "Unknown", "Northern Thailand", "Good",
-                    "guess", "Memory · photographs",
+                    "靛蓝市集布料", "织物", "2026-08-24", "exact",
+                    "清迈", "泰国", "周末市集", "฿680",
+                    "它折在一叠颜色更鲜亮的布料下面。最后选中它，恰恰是因为那种并不均匀的靛蓝。",
+                    "棉", "防染", "佚名", "泰国北部", "良好",
+                    "guess", "个人记忆 · 照片",
                     "https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=1400&q=85", 0,
                 ),
                 (
-                    "Small glazed vessel", "Ceramic", "2018", "year",
-                    "Unknown city", "Japan", "Unknown", "Unknown",
-                    "Probably bought during a family trip to Japan. The exact city has slipped away; an old photograph may eventually place it.",
-                    "Stoneware", "Glazed", "Unknown", "Japan", "Good",
-                    "unknown", "Memory only",
+                    "小型釉陶器", "陶瓷", "2018", "year",
+                    "城市不详", "日本", "来源不详", "价格不详",
+                    "大概是在一次日本家庭旅行中买到的，具体城市已经记不清了。也许以后找到旧照片，能够重新确定它来自哪里。",
+                    "炻器", "施釉", "佚名", "日本", "良好",
+                    "unknown", "仅凭记忆",
                     "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1400&q=85", 0,
                 ),
             ],
@@ -136,7 +136,7 @@ def new_object():
         name = request.form.get("name", "").strip()
         category = request.form.get("category", "").strip()
         if not name or not category:
-            flash("Give the object a name and category so it has a place in the collection.")
+            flash("请填写藏品名称和类别，让它在收藏中有一个位置。")
             return render_template("new.html", form=request.form)
         fields = [
             "name", "category", "acquired_date", "date_precision", "place", "country",

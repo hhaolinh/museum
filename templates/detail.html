@@ -1,21 +1,21 @@
 {% extends "base.html" %}
-{% block title %}{{ item.name }} — Cabinet{% endblock %}
+{% block title %}{{ item.name }} — 藏阁{% endblock %}
 {% block content %}
 <article class="detail">
-  <div class="detail-image"><img src="{{ item.image_url }}" alt="{{ item.name }}"><a href="{{ url_for('index') }}">← Back to collection</a></div>
+  <div class="detail-image"><img src="{{ item.image_url }}" alt="{{ item.name }}"><a href="{{ url_for('index') }}">← 返回藏品</a></div>
   <div class="detail-content">
-    <p class="eyebrow">Object {{ '%03d'|format(item.id) }} · {{ item.category }}</p>
+    <p class="eyebrow">藏品 {{ '%03d'|format(item.id) }} · {{ item.category }}</p>
     <h1>{{ item.name }}</h1>
-    <div class="acquisition"><span>Acquired</span><strong>{{ '~' if item.date_precision != 'exact' }}{{ item.acquired_date or 'Date unknown' }}</strong><strong>{{ item.place or 'Place unknown' }}{% if item.country %}, {{ item.country }}{% endif %}</strong></div>
+    <div class="acquisition"><span>入藏信息</span><strong>{{ '约 ' if item.date_precision != 'exact' }}{{ item.acquired_date or '日期不详' }}</strong><strong>{{ item.place or '地点不详' }}{% if item.country %}，{{ item.country }}{% endif %}</strong></div>
     {% if item.story %}<blockquote>“{{ item.story }}”</blockquote>{% endif %}
     <dl class="facts">
-      {% for label, value in [('Source', item.source), ('Maker', item.maker), ('Material', item.material), ('Technique', item.technique), ('Culture / region', item.culture_region), ('Condition', item.condition), ('Price paid', item.price)] %}
+      {% for label, value in [('来源', item.source), ('制作者', item.maker), ('材料', item.material), ('工艺', item.technique), ('文化 / 地区', item.culture_region), ('保存状况', item.condition), ('购入价格', item.price)] %}
       {% if value %}<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>{% endif %}
       {% endfor %}
     </dl>
     <section class="knowledge">
       <div class="knowledge-icon">{{ {'confirmed':'✓','seller':'≈','guess':'?','unknown':'?'}[item.knowledge_status] }}</div>
-      <div><p class="eyebrow">Knowledge status</p><h3>{{ {'confirmed':'Confirmed','seller':'Seller told me','guess':'My current guess','unknown':'Needs research'}[item.knowledge_status] }}</h3><p>{{ item.evidence or 'No evidence has been attached yet.' }}</p></div>
+      <div><p class="eyebrow">知识状态</p><h3>{{ {'confirmed':'已经确认','seller':'店主口述','guess':'目前推测','unknown':'有待考证'}[item.knowledge_status] }}</h3><p>{{ item.evidence or '暂未附上证据。' }}</p></div>
     </section>
   </div>
 </article>

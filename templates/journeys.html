@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Journeys — Cabinet{% endblock %}
+{% block title %}旅迹 — 藏阁{% endblock %}
 {% block content %}
 <section class="journeys">
-  <div class="journey-heading"><p class="eyebrow">A geography of memory</p><h1>Journeys</h1><p>Places are not metadata here. They are rooms in the museum.</p></div>
-  <div class="journey-map"><div class="map-orbit one"></div><div class="map-orbit two"></div><span class="pin p1">Thailand</span><span class="pin p2">Japan</span><p>More journeys<br>will appear here.</p></div>
+  <div class="journey-heading"><p class="eyebrow">记忆的地理</p><h1>旅迹</h1><p>地点在这里不只是元数据，而是博物馆里的一间间展室。</p></div>
+  <div class="journey-map"><div class="map-orbit one"></div><div class="map-orbit two"></div><span class="pin p1">泰国</span><span class="pin p2">日本</span><p>更多旅途<br>将在这里出现。</p></div>
   <div class="journey-list">
-  {% for group in groups %}<div><span class="year">{{ group.year or 'Unknown' }}</span><h2>{{ group.country or 'Unknown country' }}</h2><p>{{ group.place or 'Place unknown' }}</p><span>{{ group.count }} object{{ '' if group.count == 1 else 's' }}</span></div>{% endfor %}
+  {% for group in groups %}<div><span class="year">{{ group.year or '年份不详' }}</span><h2>{{ group.country or '国家不详' }}</h2><p>{{ group.place or '地点不详' }}</p><span>{{ group.count }} 件藏品</span></div>{% endfor %}
   </div>
 </section>
 {% endblock %}

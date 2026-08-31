@@ -1,6 +1,6 @@
-# Cabinet
+# 藏阁 Cabinet
 
-A personal museum for objects, journeys, provenance, and memories. Built with Flask and SQLite.
+一座记录物件、旅途、来源与记忆的私人博物馆。使用 Flask 与 SQLite 构建。
 
 ## Run locally
 

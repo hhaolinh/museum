@@ -1,29 +1,30 @@
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f1eee6">
-  <title>{% block title %}Cabinet — A private museum{% endblock %}</title>
-  <meta name="description" content="A private museum of objects, journeys, and the stories that make them worth keeping.">
+  <title>{% block title %}藏阁 Cabinet — 私人博物馆{% endblock %}</title>
+  <meta name="description" content="一座收藏物件、旅途与记忆的私人博物馆。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Manrope:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Noto+Sans+SC:wght@400;500;600&family=Noto+Serif+SC:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='zh.css') }}">
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="{{ url_for('index') }}" aria-label="Cabinet home">
-      <span class="brand-mark">C</span>
-      <span>Cabinet <small>Private museum</small></span>
+    <a class="brand" href="{{ url_for('index') }}" aria-label="藏阁首页">
+      <span class="brand-mark">藏</span>
+      <span>藏阁 Cabinet <small>私人博物馆</small></span>
     </a>
     <nav>
-      <a href="{{ url_for('index') }}">Collection</a>
-      <a href="{{ url_for('journeys') }}">Journeys</a>
-      <a class="add-link" href="{{ url_for('new_object') }}"><span>＋</span> Add object</a>
+      <a href="{{ url_for('index') }}">藏品</a>
+      <a href="{{ url_for('journeys') }}">旅迹</a>
+      <a class="add-link" href="{{ url_for('new_object') }}"><span>＋</span> 新增藏品</a>
     </nav>
   </header>
   <main>{% block content %}{% endblock %}</main>
-  <footer><span>Cabinet, begun 2026</span><span>Objects remember what we forget.</span></footer>
+  <footer><span>藏阁，始于 2026</span><span>物会记住我们遗忘的事。</span></footer>
 </body>
 </html>

@@ -2,24 +2,24 @@
 {% block content %}
 <section class="intro">
   <div>
-    <p class="eyebrow">The living collection</p>
-    <h1>Every object<br>holds a <em>journey.</em></h1>
+    <p class="eyebrow">仍在生长的收藏</p>
+    <h1>每一件物，<br>都有一段<em>旅途。</em></h1>
   </div>
   <div class="intro-side">
-    <p>A personal archive of things found, carried home, and slowly understood.</p>
-    <div class="stats"><span><b>{{ total }}</b> objects</span><span><b>{{ countries }}</b> countries</span><span><b>2026</b> since</span></div>
+    <p>关于那些被发现、被带回家，又在岁月里慢慢被理解的东西。</p>
+    <div class="stats"><span><b>{{ total }}</b> 件藏品</span><span><b>{{ countries }}</b> 个国家</span><span><b>2026</b> 始藏</span></div>
   </div>
 </section>
 
 <section class="collection-shell">
   <div class="collection-tools">
     <form class="search" method="get">
-      <label class="sr-only" for="q">Search collection</label>
-      <span>⌕</span><input id="q" name="q" value="{{ query }}" placeholder="Search objects, places, stories…">
+      <label class="sr-only" for="q">搜索藏品</label>
+      <span>⌕</span><input id="q" name="q" value="{{ query }}" placeholder="搜索藏品、地点或故事……">
       {% if active_category %}<input type="hidden" name="category" value="{{ active_category }}">{% endif %}
     </form>
     <div class="category-list">
-      <a class="{{ 'active' if not active_category }}" href="{{ url_for('index', q=query) }}">All <sup>{{ total }}</sup></a>
+      <a class="{{ 'active' if not active_category }}" href="{{ url_for('index', q=query) }}">全部 <sup>{{ total }}</sup></a>
       {% for category in categories %}<a class="{{ 'active' if active_category == category.category }}" href="{{ url_for('index', q=query, category=category.category) }}">{{ category.category }} <sup>{{ category.count }}</sup></a>{% endfor %}
     </div>
   </div>
@@ -29,15 +29,15 @@
     {% for item in objects %}
     <article class="object-card {{ 'feature' if item.featured }}">
       <a href="{{ url_for('object_detail', object_id=item.id) }}">
-        <div class="object-image"><img src="{{ item.image_url or 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80' }}" alt="{{ item.name }}"><span class="object-number">No. {{ '%03d'|format(item.id) }}</span></div>
-        <div class="object-meta"><div><p>{{ item.category }} · {{ item.country or 'Unknown origin' }}</p><h2>{{ item.name }}</h2></div><span>↗</span></div>
+        <div class="object-image"><img src="{{ item.image_url or 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80' }}" alt="{{ item.name }}"><span class="object-number">藏品 {{ '%03d'|format(item.id) }}</span></div>
+        <div class="object-meta"><div><p>{{ item.category }} · {{ item.country or '产地不详' }}</p><h2>{{ item.name }}</h2></div><span>↗</span></div>
         {% if item.story %}<p class="card-story">{{ item.story|truncate(150) }}</p>{% endif %}
       </a>
     </article>
     {% endfor %}
   </div>
   {% else %}
-  <div class="empty"><p class="eyebrow">Nothing found</p><h2>The cabinet is quiet here.</h2><a href="{{ url_for('index') }}">Clear search</a></div>
+  <div class="empty"><p class="eyebrow">未找到藏品</p><h2>这格藏柜还是空的。</h2><a href="{{ url_for('index') }}">清除搜索</a></div>
   {% endif %}
 </section>
 {% endblock %}

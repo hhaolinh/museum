@@ -1,0 +1,8 @@
+:root {
+  --serif: "Noto Serif SC", "Newsreader", Georgia, serif;
+  --sans: "Noto Sans SC", "Manrope", sans-serif;
+  --mono: "DM Mono", "Noto Sans SC", monospace;
+}
+
+body { letter-spacing: 0.01em; }
+.intro h1, .detail h1, .form-intro h1, .journey-heading h1 { line-height: 1.02; }

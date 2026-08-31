@@ -20,15 +20,15 @@ def client():
 def test_collection_and_detail(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert b"Blue\xe2\x80\x93green woven textile" in response.data
+    assert "蓝绿色变色织物".encode() in response.data
     assert client.get("/objects/1").status_code == 200
 
 
 def test_add_object(client):
     response = client.post(
         "/objects/new",
-        data={"name": "Carved comb", "category": "Adornment", "country": "Thailand"},
+        data={"name": "雕花木梳", "category": "装饰品", "country": "泰国"},
         follow_redirects=True,
     )
     assert response.status_code == 200
-    assert b"Carved comb" in response.data
+    assert "雕花木梳".encode() in response.data
