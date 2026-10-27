@@ -2,7 +2,7 @@
 {% block title %}{{ item.name }} — 藏阁{% endblock %}
 {% block content %}
 <article class="detail">
-  <div class="detail-image"><img src="{{ item.image_url }}" alt="{{ item.name }}"><a href="{{ url_for('index') }}">← 返回藏品</a></div>
+  <div class="detail-image">{% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.name }}">{% else %}<div class="detail-no-photo">尚未留影</div>{% endif %}<a href="{{ url_for('index') }}">← 返回藏品</a></div>
   <div class="detail-content">
     <p class="eyebrow">藏品 {{ '%03d'|format(item.id) }} · {{ item.category }}</p>
     <h1>{{ item.name }}</h1>
@@ -15,7 +15,7 @@
     </dl>
     <section class="knowledge">
       <div class="knowledge-icon">{{ {'confirmed':'✓','seller':'≈','guess':'?','unknown':'?'}[item.knowledge_status] }}</div>
-      <div><p class="eyebrow">知识状态</p><h3>{{ {'confirmed':'已经确认','seller':'店主口述','guess':'目前推测','unknown':'有待考证'}[item.knowledge_status] }}</h3><p>{{ item.evidence or '暂未附上证据。' }}</p></div>
+      <div><p class="eyebrow">知识状态</p><h3>{{ {'confirmed':'已经确认','seller':'店主口述','guess':'目前推测','unknown':'有待考证'}[item.knowledge_status] }}</h3></div>
     </section>
   </div>
 </article>

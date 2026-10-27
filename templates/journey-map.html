@@ -1,0 +1,27 @@
+<div class="atlas" data-atlas>
+  <div class="atlas-main">
+    <div class="atlas-heading"><p>点击地点，翻看在那里留下的记忆。</p><div class="atlas-controls" hidden><button type="button" data-zoom="in" aria-label="放大地图">＋</button><button type="button" data-zoom="out" aria-label="缩小地图">−</button><button type="button" data-zoom="reset">全图</button></div></div>
+    <div class="atlas-viewport" aria-label="世界地图，可用按钮缩放或拖动平移">
+      <div class="atlas-stage">
+        <img src="{{ url_for('static', filename='world-land.svg') }}" alt="世界陆地轮廓" draggable="false">
+        {% for group in map_groups %}<button type="button" class="atlas-pin" style="left:{{ group.x }}%;top:{{ group.y }}%" data-location="{{ group.id }}" aria-controls="location-{{ group.id }}" aria-label="{{ group.country }}，{{ group.name }}，{{ group.objects|length }} 件藏品" aria-pressed="false"><span>{{ group.objects|length }}</span></button>{% endfor %}
+      </div>
+      {% if not map_groups %}<p class="atlas-no-pins">{{ '这些藏品还没有选定城市，暂时无法在地图上定位。' if total else '还没有留下坐标。从第一件藏品开始。' }}</p>{% endif %}
+    </div>
+    <p class="atlas-key"><span class="atlas-key-dot"></span>数字为该地点的藏品数量 · 城市位置示意<span>陆地轮廓：<a href="https://www.naturalearthdata.com/">Natural Earth</a></span></p>
+    {% if map_groups %}<div class="atlas-places" aria-label="选择地点">{% for group in map_groups %}<button type="button" data-location="{{ group.id }}" aria-controls="location-{{ group.id }}" aria-pressed="false">{{ group.name }} <span>{{ group.objects|length }}</span></button>{% endfor %}</div>{% endif %}
+  </div>
+  <aside class="atlas-sidebar" aria-label="地点藏品" aria-live="polite">
+    <p class="eyebrow">地点档案</p>
+    {% for group in map_groups %}
+    <section id="location-{{ group.id }}" class="atlas-location" data-panel="{{ group.id }}"><p class="atlas-country">{{ group.country }}</p><h2 tabindex="-1">{{ group.name }}</h2><p class="field-help">{{ group.objects|length }} 件藏品{% if selected_year %} · {{ selected_year if selected_year != 'unknown' else '日期待补' }}{% endif %}</p>
+      {% for item in group.objects %}<a class="atlas-object" href="{{ url_for('object_detail', object_id=item.id) }}">{% if item.image_url %}<img src="{{ item.image_url }}" alt="" loading="lazy">{% endif %}<div><span>{{ item.category }} · {{ item.acquired_date or '日期待补' }}</span><h3>{{ item.name }}</h3>{% if item.story %}<p>{{ item.story|truncate(85) }}</p>{% endif %}<span>查看藏品 ↗</span></div></a>{% endfor %}
+    </section>
+    {% endfor %}
+    {% if not map_groups %}<div class="atlas-sidebar-empty"><h2>等待一个坐标。</h2><p>为藏品选定城市后，<br>就能从地图重访它的来处。</p><a href="{{ url_for('new_object') }}">记录藏品 →</a></div>{% endif %}
+  </aside>
+</div>
+{% if unlocated %}
+<details class="unlocated"><summary>{{ unlocated|length }} 件藏品待定位 <span>尚未选定城市，仍保留在时间轴中</span></summary><ul>{% for item in unlocated %}<li><a href="{{ url_for('object_detail', object_id=item.id) }}">{{ item.name }} ↗</a><span>{{ item.country or '国家 / 地区待补' }}</span></li>{% endfor %}</ul></details>
+{% endif %}
+<p class="reference-credit">城市数据：<a href="https://www.geonames.org/">GeoNames</a>，<a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a> · 离线城市库不包含所有小城镇，未收录地点可暂留空，具体位置写入来源。</p>

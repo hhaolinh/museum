@@ -1,7 +1,12 @@
 from pathlib import Path
+from datetime import datetime, date
+from uuid import uuid4
 import sqlite3
+import warnings
 
-from flask import Flask, abort, flash, g, redirect, render_template, request, url_for
+from flask import Flask, abort, flash, g, redirect, render_template, request, url_for, send_from_directory
+from PIL import Image, UnidentifiedImageError
+from catalog import COUNTRIES, CITIES, CURRENCIES, CATEGORIES, CONDITIONS, find_cities, validate_object, city_label
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -9,6 +14,64 @@ DATABASE = BASE_DIR / "museum.db"
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="dev-change-me", DATABASE=DATABASE)
+app.config.update(UPLOAD_FOLDER=BASE_DIR / "storage", MAX_CONTENT_LENGTH=10 * 1024 * 1024)
+
+
+@app.context_processor
+def form_reference_data():
+    form = g.reference_form if "reference_form" in g else request.form
+    country = form.get("country_code", "")
+    cities, _ = find_cities(country, selected=form.get("place_id", ""))
+    return dict(country_options=sorted(COUNTRIES.items(), key=lambda pair: pair[1]["english"]),
+                currency_options=CURRENCIES, category_options=CATEGORIES,
+                condition_options=CONDITIONS, city_options=cities,
+                current_year=date.today().year,
+                country_currencies={code: item["currency"] for code, item in COUNTRIES.items()})
+
+
+@app.get("/api/places")
+def place_options():
+    country = request.args.get("country", "")
+    if country not in COUNTRIES:
+        return {"error": "请选择有效的国家或地区。"}, 400
+    cities, total = find_cities(country, request.args.get("q", ""))
+    return {"cities": cities, "total": total}
+
+
+@app.route("/storage/<filename>")
+def stored_image(filename):
+    return send_from_directory(app.config["UPLOAD_FOLDER"], filename)
+
+
+@app.errorhandler(413)
+def upload_too_large(_error):
+    g.reference_form = {}
+    flash("图片和表单总大小不能超过 10 MB。请压缩图片后重新选择。")
+    return render_template("new.html", form={}), 413
+
+
+def save_image(upload):
+    """Validate actual image contents, then store using an opaque filename."""
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(upload.stream) as picture:
+                extension = {"JPEG": ".jpg", "PNG": ".png", "WEBP": ".webp", "GIF": ".gif"}.get(picture.format)
+                if extension is None:
+                    raise ValueError("请选择 JPEG、PNG、WebP 或 GIF 图片。")
+                picture.verify()
+    except (UnidentifiedImageError, OSError, SyntaxError, Image.DecompressionBombError, Image.DecompressionBombWarning) as error:
+        raise ValueError("无法读取这张图片，请选择有效的 JPEG、PNG、WebP 或 GIF 文件。") from error
+    folder = Path(app.config["UPLOAD_FOLDER"])
+    folder.mkdir(parents=True, exist_ok=True)
+    path = folder / (uuid4().hex + extension)
+    upload.stream.seek(0)
+    try:
+        upload.save(path)
+    except Exception:
+        path.unlink(missing_ok=True)
+        raise
+    return path
 
 
 def get_db():
@@ -46,7 +109,6 @@ def init_db():
             culture_region TEXT,
             condition TEXT,
             knowledge_status TEXT NOT NULL DEFAULT 'unknown',
-            evidence TEXT,
             image_url TEXT,
             featured INTEGER NOT NULL DEFAULT 0,
             created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -55,43 +117,32 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_objects_category ON objects(category);
         """
     )
-    if db.execute("SELECT COUNT(*) FROM objects").fetchone()[0] == 0:
-        db.executemany(
-            """
-            INSERT INTO objects
-            (name, category, acquired_date, date_precision, place, country, source,
-             price, story, material, technique, maker, culture_region, condition,
-             knowledge_status, evidence, image_url, featured)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            [
-                (
-                    "蓝绿色变色织物", "织物", "2026-08-27", "exact",
-                    "曼谷", "泰国", "Pha ToomThong", "฿2,400",
-                    "我在三个颜色之间纠结了很久，最后发现这一块随着光线和角度会悄悄地从蓝色变成绿色。店主说它叫 Pha ToomThong；我先把购买当天听到的说法保存下来，留待以后考证。",
-                    "丝", "手工织造", "佚名", "泰国", "极佳",
-                    "seller", "店主口述 · 购买当天的照片",
-                    "https://images.unsplash.com/photo-1606722590583-6951b5ea92ad?auto=format&fit=crop&w=1400&q=85", 1,
-                ),
-                (
-                    "靛蓝市集布料", "织物", "2026-08-24", "exact",
-                    "清迈", "泰国", "周末市集", "฿680",
-                    "它折在一叠颜色更鲜亮的布料下面。最后选中它，恰恰是因为那种并不均匀的靛蓝。",
-                    "棉", "防染", "佚名", "泰国北部", "良好",
-                    "guess", "个人记忆 · 照片",
-                    "https://images.unsplash.com/photo-1590736969955-71cc94901144?auto=format&fit=crop&w=1400&q=85", 0,
-                ),
-                (
-                    "小型釉陶器", "陶瓷", "2018", "year",
-                    "城市不详", "日本", "来源不详", "价格不详",
-                    "大概是在一次日本家庭旅行中买到的，具体城市已经记不清了。也许以后找到旧照片，能够重新确定它来自哪里。",
-                    "炻器", "施釉", "佚名", "日本", "良好",
-                    "unknown", "仅凭记忆",
-                    "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&w=1400&q=85", 0,
-                ),
-            ],
-        )
+    columns = {row[1] for row in db.execute("PRAGMA table_info(objects)")}
+    for field in ("country_code", "place_id", "price_amount", "currency_code"):
+        if field not in columns:
+            db.execute(f"ALTER TABLE objects ADD COLUMN {field} TEXT NOT NULL DEFAULT ''")
     db.commit()
+
+
+def acquisition_year(item):
+    if item["date_precision"] == "unknown":
+        return None
+    value = (item["acquired_date"] or "").strip()
+    formats = {4: "%Y", 7: "%Y-%m", 10: "%Y-%m-%d"}
+    if len(value) not in formats:
+        return None
+    try:
+        return datetime.strptime(value, formats[len(value)]).year
+    except ValueError:
+        return None
+
+
+def display_item(row):
+    item = dict(row)
+    city = CITIES.get(item['place_id'])
+    if city and city['country'] == item['country_code']:
+        item['place'] = city_label(city)
+    return item
 
 
 @app.route("/")
@@ -108,17 +159,19 @@ def index():
         sql += " AND category = ?"
         params.append(category)
     sql += " ORDER BY featured DESC, acquired_date DESC, id DESC"
-    objects = db.execute(sql, params).fetchall()
+    objects = [display_item(row) for row in db.execute(sql, params)]
     categories = db.execute(
         "SELECT category, COUNT(*) AS count FROM objects GROUP BY category ORDER BY category"
     ).fetchall()
     countries = db.execute(
         "SELECT COUNT(DISTINCT country) FROM objects WHERE country != ''"
     ).fetchone()[0]
+    years = [year for item in db.execute("SELECT acquired_date, date_precision FROM objects")
+             if (year := acquisition_year(item)) is not None]
     return render_template(
         "index.html", objects=objects, categories=categories, countries=countries,
         total=db.execute("SELECT COUNT(*) FROM objects").fetchone()[0],
-        query=query, active_category=category,
+        query=query, active_category=category, first_year=min(years) if years else None,
     )
 
 
@@ -127,29 +180,41 @@ def object_detail(object_id):
     item = get_db().execute("SELECT * FROM objects WHERE id = ?", (object_id,)).fetchone()
     if item is None:
         abort(404)
-    return render_template("detail.html", item=item)
+    return render_template("detail.html", item=display_item(item))
 
 
 @app.route("/objects/new", methods=("GET", "POST"))
 def new_object():
     if request.method == "POST":
-        name = request.form.get("name", "").strip()
-        category = request.form.get("category", "").strip()
-        if not name or not category:
-            flash("请填写藏品名称和类别，让它在收藏中有一个位置。")
-            return render_template("new.html", form=request.form)
-        fields = [
-            "name", "category", "acquired_date", "date_precision", "place", "country",
-            "source", "price", "story", "material", "technique", "maker",
-            "culture_region", "condition", "knowledge_status", "evidence", "image_url",
-        ]
-        values = [request.form.get(field, "").strip() for field in fields]
-        db = get_db()
-        db.execute(
-            f"INSERT INTO objects ({', '.join(fields)}) VALUES ({', '.join('?' for _ in fields)})",
-            values,
-        )
-        db.commit()
+        try:
+            data = validate_object(request.form)
+        except ValueError as error:
+            flash(str(error))
+            return render_template("new.html", form=request.form), 400
+        fields = list(data)
+        values = list(data.values())
+        upload = request.files.get("image")
+        saved_image = None
+        if upload and upload.filename:
+            try:
+                saved_image = save_image(upload)
+            except ValueError as error:
+                flash(str(error))
+                return render_template("new.html", form=request.form), 400
+            values[fields.index("image_url")] = url_for("stored_image", filename=saved_image.name)
+        try:
+            db = get_db()
+            db.execute(
+                f"INSERT INTO objects ({', '.join(fields)}) VALUES ({', '.join('?' for _ in fields)})",
+                values,
+            )
+            db.commit()
+        except Exception:
+            if saved_image:
+                saved_image.unlink(missing_ok=True)
+            if "db" in g:
+                g.db.rollback()
+            raise
         object_id = db.execute("SELECT last_insert_rowid()").fetchone()[0]
         return redirect(url_for("object_detail", object_id=object_id))
     return render_template("new.html", form={})
@@ -157,15 +222,50 @@ def new_object():
 
 @app.route("/journeys")
 def journeys():
-    groups = get_db().execute(
-        """
-        SELECT country, place, substr(acquired_date, 1, 4) AS year, COUNT(*) AS count
-        FROM objects
-        GROUP BY country, place, year
-        ORDER BY year DESC, country, place
-        """
-    ).fetchall()
-    return render_template("journeys.html", groups=groups)
+    all_items = [display_item(row) for row in get_db().execute("SELECT * FROM objects ORDER BY acquired_date DESC, id DESC")]
+    selected_year = request.args.get("year", "")
+    view = "map" if request.args.get("view") == "map" else "timeline"
+    available_years = sorted({acquisition_year(item) for item in all_items if acquisition_year(item)}, reverse=True)
+    if selected_year and selected_year not in {str(year) for year in available_years} | {"unknown"}:
+        selected_year = ""
+    items = [item for item in all_items if not selected_year or
+             (str(acquisition_year(item)) if acquisition_year(item) else "unknown") == selected_year]
+    map_groups = {}
+    unlocated = []
+    for item in items:
+        city = CITIES.get(item["place_id"])
+        if not city or city["country"] != item["country_code"]:
+            unlocated.append(item)
+            continue
+        group = map_groups.setdefault(item["place_id"], dict(
+            id=item["place_id"], name=item["place"], country=item["country"], objects=[],
+            x=(city["lon"] + 180) / 3.6, y=(90 - city["lat"]) / 1.8))
+        group["objects"].append(item)
+    map_groups = list(map_groups.values())
+    years = {}
+    countries = set()
+    places = set()
+    for item in items:
+        year = acquisition_year(item)
+        country = (item["country"] or "").strip()
+        place = (item["place"] or "").strip()
+        if country:
+            countries.add(country)
+        if country or place:
+            places.add((country, place))
+        stops = years.setdefault(year, {})
+        stops.setdefault((country, place), []).append(item)
+    timeline = [
+        {"year": year, "stops": [
+            {"country": country, "place": place, "objects": objects}
+            for (country, place), objects in years[year].items()
+        ]}
+        for year in sorted(years, key=lambda value: value or 0, reverse=True)
+    ]
+    return render_template("journeys.html", timeline=timeline, total=len(items),
+                           countries=len(countries), places=len(places), view=view,
+                           selected_year=selected_year, available_years=available_years,
+                           map_groups=map_groups, unlocated=unlocated, has_records=bool(all_items))
 
 
 with app.app_context():

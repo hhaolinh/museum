@@ -1,11 +1,52 @@
 {% extends "base.html" %}
 {% block title %}旅迹 — 藏阁{% endblock %}
 {% block content %}
-<section class="journeys">
-  <div class="journey-heading"><p class="eyebrow">记忆的地理</p><h1>旅迹</h1><p>地点在这里不只是元数据，而是博物馆里的一间间展室。</p></div>
-  <div class="journey-map"><div class="map-orbit one"></div><div class="map-orbit two"></div><span class="pin p1">泰国</span><span class="pin p2">日本</span><p>更多旅途<br>将在这里出现。</p></div>
-  <div class="journey-list">
-  {% for group in groups %}<div><span class="year">{{ group.year or '年份不详' }}</span><h2>{{ group.country or '国家不详' }}</h2><p>{{ group.place or '地点不详' }}</p><span>{{ group.count }} 件藏品</span></div>{% endfor %}
+<section class="travel-page">
+  <header class="travel-heading">
+    <div><p class="eyebrow">记忆的地理</p><h1>沿着物件，<br><em>重访来处。</em></h1></div>
+    <div class="travel-intro"><p>有些地点，因为带回的一件物，<br>有了可以重访的记忆。</p>
+      {% if total %}<dl class="travel-stats"><div><dt>个国家</dt><dd>{{ countries }}</dd></div><div><dt>处地点</dt><dd>{{ places }}</dd></div><div><dt>件藏品</dt><dd>{{ total }}</dd></div></dl>{% endif %}
+    </div>
+  </header>
+  <div class="travel-toolbar">
+    <nav class="view-switch" aria-label="旅迹视图">
+      <a href="{{ url_for('journeys', view='timeline', year=selected_year) }}"{{ ' aria-current=page' if view == 'timeline' }}>时间轴</a>
+      <a href="{{ url_for('journeys', view='map', year=selected_year) }}"{{ ' aria-current=page' if view == 'map' }}>世界地图</a>
+    </nav>
+    <form method="get" class="travel-filter"><input type="hidden" name="view" value="{{ view }}"><label for="travel-year">入藏年份</label><select id="travel-year" name="year"><option value="">全部年份</option>{% for year in available_years %}<option value="{{ year }}"{{ ' selected' if selected_year == year|string }}>{{ year }}</option>{% endfor %}<option value="unknown"{{ ' selected' if selected_year == 'unknown' }}>日期待补</option></select><button type="submit">查看</button></form>
   </div>
+  {% if view == 'map' %}
+    {% include 'journey-map.html' %}
+  {% elif timeline %}
+  <p class="travel-note">按入藏时间整理 · 同一年、同一地点的藏品收在一起</p>
+  <div class="travel-timeline">
+    {% for chapter in timeline %}
+    <section class="travel-year" aria-labelledby="year-{{ chapter.year or 'unknown' }}">
+      <div class="travel-year-label"><h2 id="year-{{ chapter.year or 'unknown' }}">{{ chapter.year or '日期待补' }}</h2><span>{{ '入藏记忆' if chapter.year else '留待慢慢想起' }}</span></div>
+      <div class="travel-stops">
+        {% for stop in chapter.stops %}
+        <article class="travel-stop">
+          <header class="travel-stop-heading"><div><p class="eyebrow">{{ stop.country or ('国家待补' if stop.place else '来处待补') }}</p><h3>{{ stop.place or ('地点待补' if stop.country else '还记得这件物，暂时想不起地点。') }}</h3></div><span>{{ stop.objects|length }} 件藏品</span></header>
+          <div class="travel-objects">
+            {% for item in stop.objects %}
+            <a class="travel-object" href="{{ url_for('object_detail', object_id=item.id) }}">
+              <div class="travel-thumbnail">{% if item.image_url %}<img src="{{ item.image_url }}" alt="{{ item.name }}" loading="lazy">{% else %}<span class="image-missing">尚未留影</span>{% endif %}</div>
+              <div><span class="travel-category">{{ item.category }}</span><h4>{{ item.name }}</h4>{% if item.story %}<p>{{ item.story|truncate(70) }}</p>{% endif %}<span class="travel-object-link">看看这件藏品 ↗</span></div>
+            </a>
+            {% endfor %}
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+    {% endfor %}
+  </div>
+  {% else %}
+  {% if has_records %}<div class="travel-empty"><p class="eyebrow">这一年，暂时没有记录</p><h2>换一个年份，继续重访。</h2><a class="travel-start" href="{{ url_for('journeys', view=view) }}">查看全部年份 →</a></div>
+  {% else %}
+  <div class="travel-empty"><span class="travel-empty-mark" aria-hidden="true">↗</span><p class="eyebrow">第一段记忆，还未落笔</p><h2>从一件物，记起一个地方。</h2><p>记录藏品时填下入藏日期与地点，<br>它们会在这里，慢慢连成你的旅迹。</p><a class="travel-start" href="{{ url_for('new_object') }}">记录第一件藏品 <span aria-hidden="true">→</span></a></div>
+  {% endif %}
+  {% endif %}
 </section>
+{% if view == 'map' %}<script src="{{ url_for('static', filename='journey-map.js') }}" defer></script>{% endif %}
 {% endblock %}
