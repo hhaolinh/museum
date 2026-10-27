@@ -3,9 +3,11 @@ from datetime import datetime, date
 from uuid import uuid4
 import sqlite3
 import warnings
+import hmac
 
-from flask import Flask, abort, flash, g, redirect, render_template, request, url_for, send_from_directory
+from flask import Flask, abort, flash, g, redirect, render_template, request, url_for, send_from_directory, session
 from PIL import Image, UnidentifiedImageError
+from local_data import runtime_config, prepare_database, SCHEMA_VERSION
 from catalog import COUNTRIES, CITIES, CURRENCIES, CATEGORIES, CONDITIONS, find_cities, validate_object, city_label
 
 
@@ -13,8 +15,30 @@ BASE_DIR = Path(__file__).resolve().parent
 DATABASE = BASE_DIR / "museum.db"
 
 app = Flask(__name__)
-app.config.update(SECRET_KEY="dev-change-me", DATABASE=DATABASE)
-app.config.update(UPLOAD_FOLDER=BASE_DIR / "storage", MAX_CONTENT_LENGTH=10 * 1024 * 1024)
+app.config.update(runtime_config(BASE_DIR))
+app.config['MAX_CONTENT_LENGTH'] = 10 * 1024 * 1024
+
+
+@app.before_request
+def desktop_access():
+    token = app.config.get('DESKTOP_TOKEN', '')
+    if not token:
+        return None
+    if request.path == '/desktop/session' and request.method == 'GET':
+        if not hmac.compare_digest(request.args.get('token', '').encode(), token.encode()):
+            abort(403)
+        session['desktop_token'] = token
+        response = redirect(url_for('index'))
+        response.headers['Cache-Control'] = 'no-store'
+        response.headers['Referrer-Policy'] = 'no-referrer'
+        return response
+    if not hmac.compare_digest(str(session.get('desktop_token', '')).encode(), token.encode()):
+        abort(403)
+    if request.method not in ('GET', 'HEAD', 'OPTIONS'):
+        origin = request.headers.get('Origin')
+        if origin and origin != request.host_url.rstrip('/'):
+            abort(403)
+    return None
 
 
 @app.context_processor
@@ -121,6 +145,8 @@ def init_db():
     for field in ("country_code", "place_id", "price_amount", "currency_code"):
         if field not in columns:
             db.execute(f"ALTER TABLE objects ADD COLUMN {field} TEXT NOT NULL DEFAULT ''")
+    if app.config.get('DATA_DIRECTORY'):
+        db.execute(f'PRAGMA user_version = {SCHEMA_VERSION}')
     db.commit()
 
 
@@ -269,6 +295,7 @@ def journeys():
 
 
 with app.app_context():
+    prepare_database(app.config)
     init_db()
 
 

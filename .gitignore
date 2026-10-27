@@ -7,3 +7,7 @@ museum.db
 .DS_Store
 storage/*
 !storage/.gitkeep
+/build/
+/dist/
+/desktop/.cache/
+/.venv-macos/

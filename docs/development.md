@@ -26,3 +26,7 @@ The map, city catalogue, and currency metadata are bundled with the app. Data so
 ## Local files
 
 Keep `museum.db`, uploaded files under `storage/`, virtual environments, and OS metadata out of commits. A fresh database starts empty. See the [backup guide](guide.md#back-up-your-collection) before working with personal collection data.
+
+## macOS application
+
+See [macOS build and release instructions](macos.md#maintainer-build-and-publish) for packaging, update signing, and release publishing.

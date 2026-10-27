@@ -21,7 +21,13 @@
 - **容纳不确定**：日期可以只记到年或月，也可以暂时留空；区分事实、口述与推测。
 - **保存在本地**：上传自己的照片，无需注册账号或订阅服务。
 
-## 快速开始
+## macOS 应用
+
+适用于 Apple Silicon Mac，自带运行环境、支持应用内更新，照片与收藏保存在本机。
+
+[下载 Mac 版](https://github.com/hhaolinh/museum/releases/latest) · [安装与更新说明](docs/macos.md)
+
+## 从源码运行
 
 需要 **Python 3.11 或更新版本**。
 

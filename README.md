@@ -21,7 +21,13 @@ A textile brought home from a trip, an old ceramic, a small thing you cannot qui
 - **Leave room for uncertainty** — record a year, a month, a full date, or no date at all; distinguish facts, accounts, and guesses.
 - **Keep it local** — upload your own photos, with no account or subscription required.
 
-## Quick start
+## macOS app
+
+A native app for Apple Silicon Macs, with built-in updates and local photo storage. No Python setup required.
+
+[Download for Mac](https://github.com/hhaolinh/museum/releases/latest) · [Installation and updates](docs/macos.md)
+
+## Run from source
 
 Requires **Python 3.11 or newer**.
 
