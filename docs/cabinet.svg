@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
+  <title id="title">藏阁 Cabinet</title>
+  <desc id="desc">纸色背景与深绿藏柜，陈列陶器、织物和旅途记忆。</desc>
+  <rect width="1200" height="420" fill="#f1eee6"/>
+  <path d="M50 52H1150M50 368H1150" stroke="#c9c7bc"/>
+  <text x="65" y="96" fill="#71776e" font-family="monospace" font-size="13" letter-spacing="4">A PERSONAL MUSEUM · EST. 2026</text>
+  <text x="60" y="210" fill="#234c3c" font-family="Georgia,serif" font-size="82">藏阁 <tspan font-size="64" font-style="italic">Cabinet</tspan></text>
+  <text x="65" y="272" fill="#1d2621" font-family="serif" font-size="25">每一件物，都有一段旅途。</text>
+  <text x="65" y="326" fill="#71776e" font-family="sans-serif" font-size="14" letter-spacing="2">物件 / 旅途 / 来源 / 记忆</text>
+  <rect x="770" y="85" width="365" height="246" rx="3" fill="#234c3c"/>
+  <path d="M792 290H1113M958 106V290" stroke="#bfc4ac" stroke-opacity=".6"/>
+  <path d="M827 273C806 242 830 216 847 203V179H880V203C903 222 920 249 900 273Z" fill="#c89b74"/>
+  <ellipse cx="863" cy="179" rx="17" ry="5" fill="#e3c5a2"/>
+  <path d="M842 223Q864 234 889 223M835 242Q864 253 898 242" fill="none" stroke="#234c3c" stroke-opacity=".4"/>
+  <path d="M993 160L1080 147L1098 267L1010 280Z" fill="#b6c5b5"/>
+  <path d="M1002 174L1080 162M1006 195L1084 183M1010 216L1088 204M1014 237L1092 225M1018 258L1095 246" stroke="#4a7065" stroke-width="6"/>
+  <circle cx="1114" cy="107" r="19" fill="#d95b2b"/>
+  <text x="1114" y="114" text-anchor="middle" fill="#f1eee6" font-family="serif" font-size="20">藏</text>
+</svg>
