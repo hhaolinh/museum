@@ -4,9 +4,9 @@ import argparse
 import json
 from pathlib import Path
 import plistlib
-import re
+import shutil
 import subprocess
-import sys
+import tempfile
 from urllib.parse import urlsplit
 from xml.etree import ElementTree as ET
 from build_macos import ROOT, sparkle, run
@@ -40,8 +40,19 @@ def prepare(app, output, prefix, notes=''):
         raise RuntimeError('The generated update feed has no release archive')
     signature = enclosure.attrib[f'{{{SPARKLE_NS}}}edSignature']
     run('swift', ROOT / 'desktop/macos/VerifyArchive.swift', info['SUPublicEDKey'], signature, archive)
+    # Keep the installer outside the appcast input: automatic updates use the ZIP.
+    installer = output / f"Cabinet-{info['CFBundleShortVersionString']}-arm64.dmg"
+    if installer.exists():
+        raise RuntimeError(f'Installer already exists: {installer}')
+    with tempfile.TemporaryDirectory(prefix='cabinet-dmg-') as temporary:
+        staging = Path(temporary)
+        shutil.copytree(app, staging / 'Cabinet.app', symlinks=True)
+        (staging / 'Applications').symlink_to('/Applications')
+        run('hdiutil', 'create', '-fs', 'HFS+', '-volname', 'Cabinet', '-srcfolder', staging,
+            '-format', 'UDZO', installer)
     manifest = dict(version=info['CFBundleShortVersionString'], build=info['CFBundleVersion'],
-                    archive=filename, feed='appcast.xml', download_url=prefix.rstrip('/') + '/' + filename)
+                    archive=filename, installer=installer.name, feed='appcast.xml',
+                    download_url=prefix.rstrip('/') + '/' + filename)
     (output / 'release.json').write_text(json.dumps(manifest, indent=2) + '\n')
     return manifest
 
@@ -49,7 +60,7 @@ def prepare(app, output, prefix, notes=''):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--app', type=Path, default=ROOT / 'dist/Cabinet.app')
-    parser.add_argument('--output', type=Path, default=ROOT / 'dist/release')
+    parser.add_argument('--output', type=Path)
     parser.add_argument('--download-url-prefix')
     parser.add_argument('--allow-local-feed', action='store_true', help='For the isolated update test only')
     args = parser.parse_args()
@@ -58,7 +69,8 @@ def main():
     parsed = urlsplit(prefix)
     if parsed.scheme != 'https' and not (args.allow_local_feed and parsed.scheme == 'http' and parsed.hostname == '127.0.0.1'):
         parser.error('Release URLs must use HTTPS')
-    manifest = prepare(args.app.resolve(), args.output.resolve(), prefix)
+    output = args.output or ROOT / 'dist/release' / f"v{info['CFBundleShortVersionString']}"
+    manifest = prepare(args.app.resolve(), output.resolve(), prefix)
     print(json.dumps(manifest, indent=2))
 
 

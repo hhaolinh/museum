@@ -94,38 +94,7 @@ final class CabinetDelegate: NSObject, NSApplicationDelegate, WKNavigationDelega
     }()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        if installIfNeeded() { return }
         openCabinet()
-    }
-
-    private func installIfNeeded() -> Bool {
-        if ProcessInfo.processInfo.environment["CABINET_SKIP_INSTALL"] == "1" { return false }
-        let target = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications/Cabinet.app")
-        if Bundle.main.bundleURL.standardizedFileURL == target.standardizedFileURL { return false }
-        let installed = FileManager.default.fileExists(atPath: target.path)
-        let alert = NSAlert()
-        alert.messageText = installed ? "这台 Mac 已安装藏阁" : "将藏阁安装到这台 Mac"
-        alert.informativeText = installed ? "打开已安装的应用，后续更新会在应用内完成。" : "安装后可从启动台打开，后续更新会自动完成。你的收藏将单独保存在这台 Mac 上。"
-        alert.addButton(withTitle: installed ? "打开藏阁" : "安装并打开")
-        alert.addButton(withTitle: "退出")
-        NSApp.activate(ignoringOtherApps: true)
-        guard alert.runModal() == .alertFirstButtonReturn else { NSApp.terminate(nil); return true }
-        do {
-            if !installed {
-                try FileManager.default.createDirectory(at: target.deletingLastPathComponent(), withIntermediateDirectories: true)
-                try FileManager.default.copyItem(at: Bundle.main.bundleURL, to: target)
-            }
-            NSWorkspace.shared.openApplication(at: target, configuration: NSWorkspace.OpenConfiguration()) { _, error in
-                DispatchQueue.main.async {
-                    if let error = error { NSAlert(error: error).runModal() }
-                    NSApp.terminate(nil)
-                }
-            }
-        } catch {
-            NSAlert(error: error).runModal()
-            NSApp.terminate(nil)
-        }
-        return true
     }
 
     private func openCabinet() {
@@ -254,7 +223,7 @@ final class CabinetDelegate: NSObject, NSApplicationDelegate, WKNavigationDelega
         let url = URL(fileURLWithPath: path)
         if !FileManager.default.fileExists(atPath: path) { FileManager.default.createFile(atPath: path, contents: nil) }
         if let file = try? FileHandle(forWritingTo: url) {
-            try? file.seekToEnd()
+            _ = try? file.seekToEnd()
             try? file.write(contentsOf: Data((value + "\n").utf8))
             try? file.close()
         }
